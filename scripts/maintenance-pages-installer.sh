@@ -1,14 +1,14 @@
 #!/bin/bash
 
 echo $'\033[1;33m'Running script maintenance-pages-installer
-echo ------------------------------------------------------
+echo ------------------------------------------------------$'\033[1;33m'
 echo
 
-echo Maintenance pages installer starting...$'\033[0m'
+echo $'\033[0;33m'Maintenance pages installer starting...$'\033[0m'
 echo
 pwd=$(pwd)
 pwd
-ls -F --color=always
+ls -aF --color=always
 echo
 
 s3=//cv-generator-life-maintenance.s3-eu-west-1.amazonaws.com
@@ -36,7 +36,7 @@ heroku config:get -a cv-generator-fe-eu MAINTENANCE_PAGE_URL
 
 
 echo
-echo $'\033[0;33m'Maintenance pages installer finished...$'\033[0m'
+echo $'\033[1;32m'Maintenance pages installer finished...$'\033[0m'
 
 echo
 # read  -n 1 -p "x" input
