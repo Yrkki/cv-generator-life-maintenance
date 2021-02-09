@@ -17,23 +17,37 @@ cdn=//d3v2pfjkkulyt1.cloudfront.net
 # pages=$s3
 pages=$cdn
 
-heroku config:get -a cv-generator-fe ERROR_PAGE_URL
-heroku config:get -a cv-generator-fe MAINTENANCE_PAGE_URL
-heroku config:set -a cv-generator-fe \
-  ERROR_PAGE_URL=$pages/application-error.html \
-  MAINTENANCE_PAGE_URL=$pages/maintenance-mode.html
-heroku config:get -a cv-generator-fe ERROR_PAGE_URL
-heroku config:get -a cv-generator-fe MAINTENANCE_PAGE_URL
-echo
+apps=(cv-generator-fe cv-generator-fe-eu)
 
-heroku config:get -a cv-generator-fe-eu ERROR_PAGE_URL
-heroku config:get -a cv-generator-fe-eu MAINTENANCE_PAGE_URL
-heroku config:set -a cv-generator-fe-eu \
-  ERROR_PAGE_URL=$pages/application-error.html \
-  MAINTENANCE_PAGE_URL=$pages/maintenance-mode.html
-heroku config:get -a cv-generator-fe-eu ERROR_PAGE_URL
-heroku config:get -a cv-generator-fe-eu MAINTENANCE_PAGE_URL
+report() {
+  heroku config:get -a $app ERROR_PAGE_URL
+  heroku config:get -a $app MAINTENANCE_PAGE_URL
+}
 
+for i in "${!apps[@]}"; do
+  app=${apps[$i]}
+  echo $'\033[1;30m'Processing the $'\033[0;35m'$app$'\033[1;30m' app...$'\033[0m'
+
+  report
+  echo
+
+  maintenanceIsOff=$(heroku maintenance -a $app)
+
+  if [ $maintenanceIsOff == "off" ]; then
+    heroku maintenance:on -a $app
+  fi
+
+  heroku config:set -a $app \
+    ERROR_PAGE_URL=$pages/application-error.html \
+    MAINTENANCE_PAGE_URL=$pages/maintenance-mode.html
+
+  if [ $maintenanceIsOff == "off" ]; then
+    heroku maintenance:off -a $app
+  fi
+
+  report
+  echo
+done
 
 echo
 echo $'\033[1;32m'Maintenance pages installer finished...$'\033[0m'
