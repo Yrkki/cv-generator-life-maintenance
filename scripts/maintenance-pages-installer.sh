@@ -11,40 +11,73 @@ pwd
 ls -aF --color=always
 echo
 
-s3=//cv-generator-life-maintenance.s3-eu-west-1.amazonaws.com
-cdn=//d3v2pfjkkulyt1.cloudfront.net
+# servers
+# s3
+s3Log=cv-generator-life-log.s3-eu-west-1.amazonaws.com
+s3Maintenance=cv-generator-life-maintenance.s3-eu-west-1.amazonaws.com
+s3="$s3Maintenance"
+# cdn
+cdnLog=d1ezniuvzgl2qb.cloudfront.net
+cdnMaintenance=d3v2pfjkkulyt1.cloudfront.net
+cdn="$cdnMaintenance"
 
-# pages=$s3
-pages=$cdn
+# Toggle. Switch between Log and Manitenance data pond by uncommenting only one of them:
+# server="$s3"
+server="$cdn"
 
-apps=(cv-generator-fe cv-generator-fe-eu)
+# deployments
+apps=(
+  cv-generator-fe-eu
+  cv-generator-fe
+  cv-generator-life-map
+  cv-generator-project-server
+  cv-generator-life-adapter
+)
 
+# status reporter
 report() {
-  heroku config:get -a $app ERROR_PAGE_URL
-  heroku config:get -a $app MAINTENANCE_PAGE_URL
+  echo -ne '    '$'\033[1;30m'ERROR_PAGE_URL: $'\033[1;31m'
+  heroku config:get ERROR_PAGE_URL -a "$app"
+  echo -ne '    '$'\033[1;30m'MAINTENANCE_PAGE_URL: $'\033[1;33m'
+  heroku config:get MAINTENANCE_PAGE_URL -a "$app"
+  echo -ne $'\033[0m'
 }
 
+# Old state
 for i in "${!apps[@]}"; do
   app=${apps[$i]}
-  echo $'\033[1;30m'Processing the $'\033[0;35m'$app$'\033[1;30m' app...$'\033[0m'
-
+  echo $'\033[1;30m'Processing the $'\033[0;35m'"$app"$'\033[1;30m' app... $'\033[0;37m'Old state: $'\033[0m'
   report
   echo
+done
 
-  maintenanceIsOff=$(heroku maintenance -a $app)
+# Changing state
+for i in "${!apps[@]}"; do
+  app=${apps[$i]}
+  echo $'\033[1;30m'Processing the $'\033[0;35m'"$app"$'\033[1;30m' app... $'\033[0;37m'Changing state: $'\033[0m'
 
-  if [ $maintenanceIsOff == "off" ]; then
-    heroku maintenance:on -a $app
+  maintenanceIsOff=$(heroku maintenance -a "$app")
+
+  if [ "$maintenanceIsOff" == "off" ]; then
+    heroku maintenance:on -a "$app"
   fi
 
-  heroku config:set -a $app \
-    ERROR_PAGE_URL=$pages/application-error.html \
-    MAINTENANCE_PAGE_URL=$pages/maintenance-mode.html
+  echo $'\033[0;37m'Changing state: $'\033[0m'
+  heroku config:set -a "$app" \
+    ERROR_PAGE_URL=//"$server"/application-error.html \
+    MAINTENANCE_PAGE_URL=//"$server"/maintenance-mode.html
 
-  if [ $maintenanceIsOff == "off" ]; then
-    heroku maintenance:off -a $app
+  if [ "$maintenanceIsOff" == "off" ]; then
+    heroku maintenance:off -a "$app"
   fi
 
+  echo
+done
+
+# New state
+for i in "${!apps[@]}"; do
+  app=${apps[$i]}
+  echo $'\033[1;30m'Processing the $'\033[0;35m'"$app"$'\033[1;30m' app... $'\033[1;32m'New state: $'\033[0m'
   report
   echo
 done
