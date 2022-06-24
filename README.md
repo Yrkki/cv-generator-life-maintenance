@@ -1,7 +1,9 @@
-# Life Maintenance
+# Maintenance
 
-Data puddle for the LifeSpan family of products
+![Maintenance](https://github.com/Yrkki/cv-generator-life-logo/blob/master/favicon/cv-generator-life-maintenance/favicon/favicon.ico?raw=true)
+
+Service pages, landing zone and data puddle for the LifeSpan℠ ecosystem
 
 ---
 
-© 1984 – 2021 [Marinov](http://marinov.ml "Marinov"). All rights reserved
+© 2021 [Marinov](http://marinov.link "Marinov"). All rights reserved.
